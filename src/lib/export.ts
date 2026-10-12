@@ -32,11 +32,10 @@ export async function exportElementToPdf(el: HTMLElement, filename: string, titl
   const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas'), import('jspdf')]);
   const bg = getComputedStyle(document.body).backgroundColor || '#ffffff';
   const canvas = await html2canvas(el, {
-    scale: 2,
+    scale: 1.6,
     backgroundColor: bg,
     useCORS: true,
     ignoreElements: (node) => node instanceof HTMLElement && node.dataset.exportIgnore !== undefined,
-    windowWidth: Math.max(el.scrollWidth, 1200),
   });
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
   const pageW = pdf.internal.pageSize.getWidth();
@@ -62,7 +61,7 @@ export async function exportElementToPdf(el: HTMLElement, filename: string, titl
       pdf.setTextColor(120);
       pdf.text(`${title} · page ${page + 1}`, margin, margin);
     }
-    pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, margin + headerH, imgW, h * scale);
+    pdf.addImage(slice.toDataURL('image/jpeg', 0.88), 'JPEG', margin, margin + headerH, imgW, h * scale, undefined, 'FAST');
     y += h;
     page += 1;
   }

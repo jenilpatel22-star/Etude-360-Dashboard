@@ -2,7 +2,7 @@ import seed from '../seed.json';
 import type { CollectionName, Dataset, EntityOf, ID } from '@/types';
 import type { DataSource } from './DataSource';
 
-const STORAGE_KEY = 'etude.dataset.v1';
+const STORAGE_KEY = 'etude.dataset.v2';
 
 const PREFIX: Record<CollectionName, string> = {
   programs: 'PRG',

@@ -354,7 +354,7 @@ const MILESTONES: Partial<Record<PhaseName, string>> = {
   'Needs analysis': 'Needs report signed off',
   Design: 'Design approved',
   'Pre-work': 'Joining instructions sent',
-  Delivery: 'Programme launch',
+  Delivery: 'Delivery complete',
   Assessment: 'Results published',
   'Post-training follow-up': '60-day impact review',
 };

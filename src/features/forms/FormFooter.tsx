@@ -1,3 +1,5 @@
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
+
 export function FormFooter({
   onCancel,
   submitting,
@@ -14,9 +16,9 @@ export function FormFooter({
   return (
     <>
       {onDelete && (
-        <button type="button" className="btn-danger mr-auto" onClick={onDelete}>
+        <ConfirmButton className="btn-danger mr-auto" onConfirm={onDelete} confirmLabel="Confirm delete">
           Delete
-        </button>
+        </ConfirmButton>
       )}
       <button type="button" className="btn-secondary" onClick={onCancel}>
         Cancel

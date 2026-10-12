@@ -77,7 +77,7 @@ export function LogisticsForm({ program, item, onClose }: { program: Program; it
           onCancel={onClose}
           submitting={submitting}
           submitLabel={item ? 'Save' : 'Add item'}
-          onDelete={item && can.delete ? () => confirm('Delete this logistics item?') && void remove('logistics', item.id).then(onClose) : undefined}
+          onDelete={item && can.delete ? () => void remove('logistics', item.id).then(onClose) : undefined}
         />
       }
     >

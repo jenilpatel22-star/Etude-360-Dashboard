@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, createHashRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Spinner } from '@/components/ui/EmptyState';
 import { ProgramsOverview } from '@/features/overview/ProgramsOverview';
@@ -12,7 +12,10 @@ const OrgAnalysis = lazy(() => import('@/features/analysis/OrgAnalysis'));
 
 const wrap = (el: React.ReactNode) => <Suspense fallback={<Spinner />}>{el}</Suspense>;
 
-const router = createBrowserRouter([
+// Hash routing for static hosts that can't rewrite deep links (VITE_ROUTER=hash).
+const createRouter = import.meta.env.VITE_ROUTER === 'hash' ? createHashRouter : createBrowserRouter;
+
+const router = createRouter([
   {
     element: <AppLayout />,
     children: [

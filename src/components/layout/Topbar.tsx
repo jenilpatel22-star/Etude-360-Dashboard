@@ -1,4 +1,5 @@
 import { Menu, Moon, RotateCcw, Sun, UserCog } from 'lucide-react';
+import { ConfirmButton } from '@/components/ui/ConfirmButton';
 import { useTheme } from '@/context/ThemeContext';
 import { useRole } from '@/context/RoleContext';
 import { useData } from '@/data/DataProvider';
@@ -29,17 +30,15 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         </select>
       </label>
       {can.manageBudget && (
-        <button
-          type="button"
-          className="btn-ghost p-2"
+        <ConfirmButton
+          className="btn-ghost p-2 text-xs"
           title="Reset demo data"
-          aria-label="Reset demo data"
-          onClick={() => {
-            if (confirm('Reset all data to the original seed? Your edits will be lost.')) void reset();
-          }}
+          ariaLabel="Reset demo data"
+          confirmLabel="Reset all edits?"
+          onConfirm={() => void reset()}
         >
           <RotateCcw className="h-4 w-4" />
-        </button>
+        </ConfirmButton>
       )}
       <button
         type="button"

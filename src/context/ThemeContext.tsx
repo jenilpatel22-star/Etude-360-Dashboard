@@ -10,6 +10,8 @@ function initialTheme(): Theme {
   } catch {
     /* ignore */
   }
+  const host = document.documentElement.dataset.theme;
+  if (host === 'light' || host === 'dark') return host;
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 

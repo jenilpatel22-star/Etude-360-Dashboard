@@ -3,4 +3,5 @@
 interface ImportMetaEnv {
   readonly VITE_DATA_SOURCE?: 'local' | 'http';
   readonly VITE_API_URL?: string;
+  readonly VITE_ROUTER?: 'browser' | 'hash';
 }

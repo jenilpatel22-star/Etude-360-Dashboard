@@ -75,7 +75,7 @@ export function ActivityForm({ program, activity, onClose }: { program: Program;
           onCancel={onClose}
           submitting={submitting}
           submitLabel={activity ? 'Save' : 'Add activity'}
-          onDelete={activity && can.delete ? () => confirm('Delete this activity?') && void remove('activities', activity.id).then(onClose) : undefined}
+          onDelete={activity && can.delete ? () => void remove('activities', activity.id).then(onClose) : undefined}
         />
       }
     >

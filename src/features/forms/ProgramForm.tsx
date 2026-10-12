@@ -119,12 +119,10 @@ export function ProgramForm({ program, onClose }: { program?: Program; onClose: 
           onDelete={
             program && can.delete
               ? () => {
-                  if (confirm(`Delete “${program.title}” and all its activities, logistics and feedback?`)) {
-                    void remove('programs', program.id).then(() => {
-                      onClose();
-                      navigate('/');
-                    });
-                  }
+                  void remove('programs', program.id).then(() => {
+                    onClose();
+                    navigate('/');
+                  });
                 }
               : undefined
           }

@@ -580,7 +580,7 @@ specs.forEach((spec, idx) => {
       pct = pi === 0 ? randInt(20, 70) : pi === 1 ? randInt(0, 15) : 0;
     } else if (ANCHOR >= pEnd) {
       // finished window — mostly complete, but a lagging program may still have a delayed phase
-      pct = lag && (pi === 2 || pi === 1) && spec.status !== 'Completed' ? 100 - lag : 100;
+      pct = lag && pi === 2 && spec.status !== 'Completed' ? 100 - Math.round(lag / 2) : 100;
       if (spec.status === 'Completed' && pi === 5 && ANCHOR < addDays(pEnd, 0)) pct = 100;
     } else if (ANCHOR <= pStart) {
       pct = 0;

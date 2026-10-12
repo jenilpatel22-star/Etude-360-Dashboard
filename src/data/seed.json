@@ -5083,7 +5083,7 @@
    "phase": "Design",
    "startDate": "2026-08-04",
    "endDate": "2026-09-06",
-   "percentComplete": 71,
+   "percentComplete": 100,
    "milestone": {
     "label": "Design approved",
     "date": "2026-09-06"
@@ -5095,7 +5095,7 @@
    "phase": "Pre-work",
    "startDate": "2026-09-07",
    "endDate": "2026-10-04",
-   "percentComplete": 71,
+   "percentComplete": 85,
    "milestone": {
     "label": "Joining instructions sent",
     "date": "2026-10-04"
@@ -5155,7 +5155,7 @@
    "phase": "Design",
    "startDate": "2026-08-07",
    "endDate": "2026-09-09",
-   "percentComplete": 67,
+   "percentComplete": 100,
    "milestone": {
     "label": "Design approved",
     "date": "2026-09-09"
@@ -5167,7 +5167,7 @@
    "phase": "Pre-work",
    "startDate": "2026-09-10",
    "endDate": "2026-10-07",
-   "percentComplete": 67,
+   "percentComplete": 83,
    "milestone": {
     "label": "Joining instructions sent",
     "date": "2026-10-07"
@@ -5299,7 +5299,7 @@
    "phase": "Design",
    "startDate": "2026-09-08",
    "endDate": "2026-10-11",
-   "percentComplete": 73,
+   "percentComplete": 100,
    "milestone": {
     "label": "Design approved",
     "date": "2026-10-11"

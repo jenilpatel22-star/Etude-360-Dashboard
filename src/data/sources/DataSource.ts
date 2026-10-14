@@ -11,6 +11,6 @@ export interface DataSource {
   create<C extends CollectionName>(collection: C, item: Omit<EntityOf<C>, 'id'>): Promise<EntityOf<C>>;
   update<C extends CollectionName>(collection: C, id: ID, patch: Partial<EntityOf<C>>): Promise<EntityOf<C>>;
   remove(collection: CollectionName, id: ID): Promise<void>;
-  /** Restore initial state (mock only; a real API may make this a no-op). */
+  /** Delete all data, including accounts (Admin only). */
   reset(): Promise<Dataset>;
 }

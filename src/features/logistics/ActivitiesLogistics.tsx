@@ -7,7 +7,7 @@ import { DataTable, type Column } from '@/components/ui/DataTable';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { useRole } from '@/context/RoleContext';
+import { useAuth } from '@/context/AuthContext';
 import { useData, useLookups } from '@/data/DataProvider';
 import { ActivityForm } from '@/features/forms/ActivityForm';
 import { LogisticsForm } from '@/features/forms/LogisticsForm';
@@ -22,8 +22,10 @@ export default function ActivitiesLogistics() {
   const program = useProgram();
   const { data, update } = useData();
   const { staffName } = useLookups();
-  const { can } = useRole();
+  const { can } = useAuth();
   const t = useChartTheme();
+  const canActivities = can.editActivities(program);
+  const canLogistics = can.editLogistics(program);
 
   const [activityEdit, setActivityEdit] = useState<Activity | 'new' | null>(null);
   const [logEdit, setLogEdit] = useState<LogisticsItem | 'new' | null>(null);
@@ -75,7 +77,7 @@ export default function ActivitiesLogistics() {
     },
     { key: 'owner', header: 'Owner', value: (a) => staffName(a.ownerId), hideOnMobile: true },
     { key: 'status', header: 'Status', value: (a) => a.status, render: (a) => <StatusBadge status={a.status} /> },
-    ...(can.editOperations
+    ...(canActivities
       ? [
           {
             key: 'edit',
@@ -164,7 +166,7 @@ export default function ActivitiesLogistics() {
             title="Activity agenda"
             subtitle={`${activities.length} activities · owner and status`}
             actions={
-              can.editOperations && (
+              canActivities && (
                 <button type="button" className="btn-primary py-1.5" onClick={() => setActivityEdit('new')}>
                   <Plus className="h-4 w-4" aria-hidden /> Add
                 </button>
@@ -224,6 +226,9 @@ export default function ActivitiesLogistics() {
             />
           }
         >
+          {!costs.length ? (
+            <EmptyState title="No costs yet">Costs appear once logistics items are added.</EmptyState>
+          ) : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={costs} layout="vertical" margin={{ left: 8, right: 16, top: 4, bottom: 4 }} barGap={2} barCategoryGap="22%">
               <CartesianGrid horizontal={false} stroke={t.grid} />
@@ -234,15 +239,16 @@ export default function ActivitiesLogistics() {
               <Bar dataKey="actual" name="Actual" fill={t.series[1]} radius={[0, 4, 4, 0]} maxBarSize={14} />
             </BarChart>
           </ResponsiveContainer>
+          )}
         </ChartCard>
       </div>
 
       <Card>
         <CardHeader
           title="Logistics checklist"
-          subtitle="Grouped by category · click a status to advance it"
+          subtitle={canLogistics ? 'Grouped by category · click a status to advance it' : 'Grouped by category'}
           actions={
-            can.editOperations && (
+            canLogistics && (
               <button type="button" className="btn-primary py-1.5" onClick={() => setLogEdit('new')}>
                 <Plus className="h-4 w-4" aria-hidden /> Add item
               </button>
@@ -299,14 +305,14 @@ export default function ActivitiesLogistics() {
                             </span>
                           </div>
                           <div className="flex items-center justify-end gap-1">
-                            {can.editOperations ? (
+                            {canLogistics ? (
                               <button type="button" onClick={() => cycleStatus(l)} title="Advance status" aria-label={`${l.description}: ${l.status}. Advance status`}>
                                 <StatusBadge status={l.status} className="cursor-pointer hover:brightness-95" />
                               </button>
                             ) : (
                               <StatusBadge status={l.status} />
                             )}
-                            {can.editOperations && (
+                            {canLogistics && (
                               <button type="button" className="btn-ghost p-1.5" onClick={() => setLogEdit(l)} aria-label={`Edit ${l.description}`}>
                                 <Pencil className="h-3.5 w-3.5" />
                               </button>

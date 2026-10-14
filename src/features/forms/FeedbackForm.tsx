@@ -25,7 +25,7 @@ function validate(v: Values): Errors<Values> {
   return e;
 }
 
-function Scale({ id, value, onChange, max, min = 1, error, label }: { id: string; value: string; onChange: (v: string) => void; max: number; min?: number; error?: string; label: string }) {
+export function Scale({ id, value, onChange, max, min = 1, error, label }: { id: string; value: string; onChange: (v: string) => void; max: number; min?: number; error?: string; label: string }) {
   return (
     <div role="radiogroup" id={id} tabIndex={-1} aria-label={label} aria-invalid={!!error || undefined} aria-describedby={error ? `${id}-error` : undefined} className="flex flex-wrap gap-1">
       {Array.from({ length: max - min + 1 }, (_, i) => String(i + min)).map((n) => (

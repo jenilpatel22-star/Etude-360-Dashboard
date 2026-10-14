@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Field, inputProps } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
-import { useRole } from '@/context/RoleContext';
+import { useAuth } from '@/context/AuthContext';
 import { useData, useLookups } from '@/data/DataProvider';
 import { required, useForm, type Errors } from '@/hooks/useForm';
 import { capitalise } from '@/lib/format';
+import { defaultPhases } from '@/lib/phases';
 import { DELIVERY_MODES, PROGRAM_CATEGORIES, PROGRAM_STATUSES, type Program } from '@/types';
 import { FormFooter, SubmitError } from './FormFooter';
 
@@ -32,7 +33,7 @@ function validate(v: Values): Errors<Values> {
   e.startDate = required(v.startDate, 'Start date');
   e.endDate = required(v.endDate, 'End date') ?? (v.startDate && v.endDate < v.startDate ? 'End date must be on or after the start date' : undefined);
   e.venue = required(v.venue, 'Venue / platform');
-  e.coordinatorId = required(v.coordinatorId, 'Coordinator');
+  e.coordinatorId = required(v.coordinatorId, 'Program Executive');
   if (!v.trainerIds.length) e.trainerIds = 'Select at least one trainer';
   const cap = Number(v.capacity);
   const enr = Number(v.enrolled);
@@ -47,7 +48,7 @@ function validate(v: Values): Errors<Values> {
 export function ProgramForm({ program, onClose }: { program?: Program; onClose: () => void }) {
   const { create, update, remove, data } = useData();
   const { trainers } = useLookups();
-  const { can } = useRole();
+  const { can } = useAuth();
   const navigate = useNavigate();
   const coordinators = data.staff.filter((s) => s.role === 'Coordinator' || s.role === 'Manager');
 
@@ -96,13 +97,14 @@ export function ProgramForm({ program, onClose }: { program?: Program; onClose: 
       if (program) await update('programs', program.id, payload);
       else {
         const created = await create('programs', payload);
+        for (const phase of defaultPhases(created.id, created.startDate, created.endDate)) await create('phases', phase);
         navigate(`/programs/${created.id}/logistics`);
       }
       onClose();
     });
   };
 
-  const budgetLocked = !!program && !can.manageBudget;
+  const budgetLocked = !can.editPrograms;
 
   return (
     <Modal
@@ -117,7 +119,7 @@ export function ProgramForm({ program, onClose }: { program?: Program; onClose: 
           submitting={submitting}
           submitLabel={program ? 'Save changes' : 'Create programme'}
           onDelete={
-            program && can.delete
+            program && can.editPrograms
               ? () => {
                   void remove('programs', program.id).then(() => {
                     onClose();
@@ -169,12 +171,13 @@ export function ProgramForm({ program, onClose }: { program?: Program; onClose: 
         <Field label="Venue / platform" htmlFor="venue" error={errors.venue} required className="sm:col-span-2">
           <input {...inputProps('venue', errors.venue)} value={values.venue} onChange={(e) => set('venue', e.target.value)} />
         </Field>
-        <Field label="Coordinator" htmlFor="coordinatorId" error={errors.coordinatorId} required>
+        <Field label="Program Executive" htmlFor="coordinatorId" error={errors.coordinatorId} required>
           <select {...inputProps('coordinatorId', errors.coordinatorId)} value={values.coordinatorId} onChange={(e) => set('coordinatorId', e.target.value)}>
             <option value="">Select…</option>
             {coordinators.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name} ({s.role})
+                {s.name}
+                {s.role === 'Manager' ? ' (Admin)' : ''}
               </option>
             ))}
           </select>
@@ -199,6 +202,11 @@ export function ProgramForm({ program, onClose }: { program?: Program; onClose: 
             aria-invalid={!!errors.trainerIds || undefined}
             aria-describedby={errors.trainerIds ? 'trainerIds-error' : undefined}
           >
+            {!trainers.length && (
+              <p className="px-1.5 py-1 text-sm muted sm:col-span-2">
+                No trainers yet. An Admin can add Trainer accounts on the Users page.
+              </p>
+            )}
             {trainers.map((t) => (
               <label key={t.id} className="flex items-center gap-2 rounded px-1.5 py-1 text-sm hover:bg-stone-50 dark:hover:bg-stone-800">
                 <input

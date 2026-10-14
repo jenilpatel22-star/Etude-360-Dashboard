@@ -2,7 +2,7 @@ import { ArrowLeft, Pencil } from 'lucide-react';
 import { useState } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { StatusBadge, Tag } from '@/components/ui/StatusBadge';
-import { useRole } from '@/context/RoleContext';
+import { useAuth } from '@/context/AuthContext';
 import { useData, useLookups } from '@/data/DataProvider';
 import { ProgramForm } from '@/features/forms/ProgramForm';
 import { MODE_ICON } from '@/features/overview/ProgramCard';
@@ -21,7 +21,7 @@ export function ProgramLayout() {
   const { programId } = useParams();
   const { data } = useData();
   const { staffName } = useLookups();
-  const { can } = useRole();
+  const { can } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [editing, setEditing] = useState(false);
@@ -76,7 +76,7 @@ export function ProgramLayout() {
                 <ModeIcon className="h-3.5 w-3.5" aria-hidden /> {capitalise(program.mode)} · {program.venue}
               </span>
               <span>Trainer{program.trainerIds.length > 1 ? 's' : ''}: {program.trainerIds.map(staffName).join(', ')}</span>
-              <span>Coordinator: {staffName(program.coordinatorId)}</span>
+              <span>Program Executive: {staffName(program.coordinatorId)}</span>
             </p>
           </div>
           {can.editPrograms && (

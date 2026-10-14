@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowUpRight, Award, FileText, Lightbulb, MessagesSquare, Scale, Sparkles, Target, Trophy } from 'lucide-react';
+import { Plus, ArrowDownRight, ArrowUpRight, Award, FileText, Lightbulb, MessagesSquare, Scale, Sparkles, Target, Trophy } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import {
   Bar,
@@ -18,6 +18,8 @@ import {
   YAxis,
 } from 'recharts';
 import { PageHeader } from '@/components/layout/AppLayout';
+import { useAuth } from '@/context/AuthContext';
+import { Feedback360Form } from '@/features/forms/Feedback360Form';
 import { ChartCard, Legend, SimpleTable } from '@/components/charts/ChartCard';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { DataTable, type Column } from '@/components/ui/DataTable';
@@ -57,6 +59,8 @@ export default function OrgAnalysis() {
   const [category, setCategory] = useState('');
   const [hidden, setHidden] = useState<Set<RespondentGroup>>(new Set());
   const [exporting, setExporting] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const { can } = useAuth();
 
   // Scope the whole page to a category if selected.
   const data: Dataset = useMemo(() => {
@@ -151,7 +155,12 @@ export default function OrgAnalysis() {
                 <option key={c}>{c}</option>
               ))}
             </select>
-            <button type="button" className="btn-primary" onClick={() => void onPdf()} disabled={exporting}>
+            {can.editFeedback && (
+              <button type="button" className="btn-secondary" onClick={() => setRecording(true)}>
+                <Plus className="h-4 w-4" aria-hidden /> Record 360° response
+              </button>
+            )}
+            <button type="button" className="btn-primary" onClick={() => void onPdf()} disabled={exporting || !data.feedback360.length}>
               <FileText className="h-4 w-4" aria-hidden /> {exporting ? 'Exporting…' : 'Export PDF'}
             </button>
           </>
@@ -160,7 +169,9 @@ export default function OrgAnalysis() {
 
       {!data.feedback360.length ? (
         <Card>
-          <EmptyState title="No 360° feedback for this scope yet" />
+          <EmptyState title="No 360° feedback for this scope yet">
+            {can.editFeedback ? 'Use “Record 360° response” to add responses from participants, trainers, sponsors, staff and vendors.' : 'An Admin records 360° responses. Results appear here once there are some.'}
+          </EmptyState>
         </Card>
       ) : (
         <div className="space-y-6">
@@ -420,6 +431,7 @@ export default function OrgAnalysis() {
           </div>
         </div>
       )}
+      {recording && <Feedback360Form onClose={() => setRecording(false)} />}
     </div>
   );
 }

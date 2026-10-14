@@ -1,6 +1,5 @@
 import { Field, inputProps } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
-import { useRole } from '@/context/RoleContext';
 import { useData } from '@/data/DataProvider';
 import { required, useForm, type Errors } from '@/hooks/useForm';
 import { capitalise } from '@/lib/format';
@@ -28,7 +27,6 @@ const validate = (v: Values): Errors<Values> => ({
 
 export function ActivityForm({ program, activity, onClose }: { program: Program; activity?: Activity; onClose: () => void }) {
   const { create, update, remove, data } = useData();
-  const { can } = useRole();
   const { values, set, errors, submit, submitting, submitError } = useForm<Values>(
     {
       title: activity?.title ?? '',
@@ -75,7 +73,7 @@ export function ActivityForm({ program, activity, onClose }: { program: Program;
           onCancel={onClose}
           submitting={submitting}
           submitLabel={activity ? 'Save' : 'Add activity'}
-          onDelete={activity && can.delete ? () => void remove('activities', activity.id).then(onClose) : undefined}
+          onDelete={activity ? () => void remove('activities', activity.id).then(onClose) : undefined}
         />
       }
     >

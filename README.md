@@ -17,11 +17,17 @@ npm run dev        # http://localhost:5173
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npm run typecheck` | Run the TypeScript project build only |
-| `npm run seed` | Regenerate `src/data/seed.json` from `scripts/generate-seed.ts` |
 
-Your edits are saved in the browser's `localStorage`. Admins can restore the original seed with the **↺ Reset demo data** button in the top bar.
+### First run
 
-> The seed data is anchored to **12 Oct 2026**, so programme statuses and phase progress make sense around that date. To shift it, change `ANCHOR` in `scripts/generate-seed.ts` and run `npm run seed`.
+The dashboard starts **empty**: no programmes, no users. The first time it opens you're asked to create the **Admin** account (name, username, password). The Admin then:
+
+1. Adds the other people on the **Users** page (Program Executives, Trainers and Trainees), choosing a username and an initial password for each and sharing it with them securely.
+2. Creates programmes on **Programmes overview**. Each new programme gets the six standard timeline phases (Needs analysis → … → Post-training follow-up), dated from the programme's start and end. Program Executives can adjust them.
+
+Everyone signs in with their own username and password. Use the menu under your name (top right) to change your password or sign out. Sessions last 12 hours. After five wrong passwords in a row, sign-in is blocked for 30 seconds.
+
+Everything is stored in the browser's `localStorage`. **Users → Clear all data** wipes everything, including accounts, and returns to first-run setup.
 
 ## Modules
 
@@ -33,21 +39,29 @@ Your edits are saved in the browser's `localStorage`. Admins can restore the ori
 | `/programs/:id/feedback` | **Feedback report**: average score per dimension, NPS gauge with promoter/passive/detractor split, response rate, score distribution, trend vs previous runs, top positive and negative comment themes, and a comments table. Exports to **PDF** and **CSV**. |
 | `/analysis` | **360° organisation analysis**: radar comparing stakeholder groups, programme × dimension heatmap, gap analysis (internal staff vs participants and sponsors), trainer leaderboard, category performance, quarter-over-quarter trend. Includes an auto-generated summary (top 3 strengths, top 3 improvement areas, recommended actions). Can be scoped to one category. Exports to **PDF**. |
 
-### Roles
+### Roles and access
 
-Switch roles from the top bar. The role is a UI view, not authentication.
+| | Programmes overview | Activities | Logistics | Structure & timeline | Feedback & 360° entry | Users |
+|---|---|---|---|---|---|---|
+| **Admin** | edit | edit | edit | edit | edit | manage |
+| **Program Executive** | view | edit (all programmes) | edit | edit | view | – |
+| **Trainer** | view | edit (assigned programmes only) | view | view | view | – |
+| **Trainee** | view | view | view | view | view | – |
 
-| Role | Programmes | Activities / logistics / phases | Feedback | Delete | Budgets & data reset |
-|---|---|---|---|---|---|
-| Admin | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Programme Coordinator | ✓ | ✓ | ✓ | – | – |
-| Trainer | read-only | read-only | read-only | – | – |
+"Edit" includes adding and deleting records in that area. Only Admins create, edit or delete programmes (including budgets). A Trainer can edit activities only on programmes where they're listed as a trainer. Every role can see the reports and the 360° analysis.
 
-The rules live in `src/lib/permissions.ts`.
+The rules live in `src/lib/permissions.ts`. Sign-in and accounts are in `src/context/AuthContext.tsx` and `src/lib/auth.ts`.
+
+### Security notes
+
+- **Hashed passwords.** Passwords are never stored in plain text. They're hashed with PBKDF2-SHA256 (210,000 iterations, random 16-byte salt per account) using the browser's Web Crypto API.
+- **Local-only data.** With the default local data source, all data, including the password hashes, lives in each browser's `localStorage`. Sign-in controls what the UI lets someone do. It doesn't stop someone with access to that browser's developer tools from reading or changing the stored data. Each browser also has its own separate set of users and programmes.
+- **Real multi-user deployments.** For shared data across devices with enforced access control, move authentication and permission checks to a server (see *Connecting a real API*). The UI's role rules in `permissions.ts` map directly onto server-side checks.
+- **Secure context required.** Web Crypto only works on `https://` or `localhost`, so serve the app from one of those.
 
 ### Forms
 
-There are add and edit dialogs for programmes, activities, logistics items, timeline phases and feedback responses. Validation runs on submit; on error, focus moves to the first invalid field and the message is announced. Some examples of the rules:
+There are add and edit dialogs for users, programmes, activities, logistics items, timeline phases, feedback responses and 360° responses. Validation runs on submit; on error, focus moves to the first invalid field and the message is announced. Some examples of the rules:
 
 - end date must not be before start date
 - enrolled must not exceed capacity
@@ -57,13 +71,11 @@ There are add and edit dialogs for programmes, activities, logistics items, time
 ## Project structure
 
 ```
-scripts/generate-seed.ts     deterministic seed generator (seeded PRNG)
 src/
   types/                     domain schema (single source of truth)
   data/
-    seed.json                generated mock data
     sources/DataSource.ts    data-access interface
-    sources/localDataSource.ts  seed + localStorage implementation (default)
+    sources/localDataSource.ts  localStorage implementation (default, starts empty)
     sources/httpDataSource.ts   REST implementation for a real API
     DataProvider.tsx         React context: dataset + create/update/remove
   lib/
@@ -96,8 +108,9 @@ All types are defined in `src/types/index.ts`. Dates are ISO strings.
 | **Feedback360** | `id, programId, group (Participants \| Trainers \| Managers/Sponsors \| Internal staff \| Vendors), submittedAt, scores {contentQuality, delivery, logistics, roiImpact, communication, responsiveness: 1–5}, comment` |
 | **Staff** | `id, name, role (Trainer \| Coordinator \| Manager \| Support), email, department, specialties[]` |
 | **Participant** | `id, name, email, organisation, department, jobTitle, programIds[]` |
+| **Account** | `id, username (unique, lower-case), displayName, email, role (Admin \| Program Executive \| Trainer \| Trainee), passwordHash, salt, iterations, staffId?, participantId?, active, createdAt` |
 
-The seed contains 15 programmes, 200 participants, 40 staff, about 220 activities, about 130 logistics items, 90 phases, about 130 evaluations and about 150 360° responses.
+Each account is linked to a profile. An Admin is linked to a Staff record with role Manager, a Program Executive to Coordinator, and a Trainer to Trainer, so all three appear in programme and activity pickers. A Trainee is linked to a Participant record. Deleting an account keeps its profile, so programme history stays intact. To stop someone signing in, deactivate their account instead.
 
 ### Derived metrics
 
@@ -121,7 +134,7 @@ VITE_DATA_SOURCE=http
 VITE_API_URL=https://api.example.com
 ```
 
-`HttpDataSource` expects REST endpoints of the form `GET/POST /:collection` and `PATCH/DELETE /:collection/:id`. The collections are `programs, activities, logistics, phases, feedback, feedback360, staff, participants`. For other backends (GraphQL, Supabase, …), implement `DataSource` and return it from `createDataSource()` in `src/data/sources/index.ts`.
+`HttpDataSource` expects REST endpoints of the form `GET/POST /:collection` and `PATCH/DELETE /:collection/:id`. The collections are `programs, activities, logistics, phases, feedback, feedback360, staff, participants`. Accounts aren't loaded from the API: with a backend, sign-in and password checks must happen on the server. For other backends (GraphQL, Supabase, …), implement `DataSource` and return it from `createDataSource()` in `src/data/sources/index.ts`.
 
 ## Accessibility & design notes
 

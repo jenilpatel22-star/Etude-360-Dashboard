@@ -1,10 +1,12 @@
-import seed from '../seed.json';
 import type { CollectionName, Dataset, EntityOf, ID } from '@/types';
 import type { DataSource } from './DataSource';
 
-const STORAGE_KEY = 'etude.dataset.v2';
+const STORAGE_KEY = 'etude.dataset.v3';
+/** Keys used by earlier versions that held sample data; removed on load. */
+const LEGACY_KEYS = ['etude.dataset.v1', 'etude.dataset.v2', 'etude.currentProgram'];
 
 const PREFIX: Record<CollectionName, string> = {
+  accounts: 'U',
   programs: 'PRG',
   activities: 'ACT',
   logistics: 'LOG',
@@ -15,12 +17,18 @@ const PREFIX: Record<CollectionName, string> = {
   participants: 'P',
 };
 
-function freshSeed(): Dataset {
-  // structuredClone keeps the imported JSON module pristine
-  const { programs, activities, logistics, phases, feedback, feedback360, staff, participants } = structuredClone(
-    seed,
-  ) as unknown as Dataset;
-  return { programs, activities, logistics, phases, feedback, feedback360, staff, participants };
+export function emptyDataset(): Dataset {
+  return {
+    accounts: [],
+    programs: [],
+    activities: [],
+    logistics: [],
+    phases: [],
+    feedback: [],
+    feedback360: [],
+    staff: [],
+    participants: [],
+  };
 }
 
 function newId(collection: CollectionName) {
@@ -32,7 +40,7 @@ function newId(collection: CollectionName) {
 const delay = (ms = 120) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Mock backend: seed JSON + edits persisted to localStorage.
+ * Browser-only backend: data persisted to localStorage, starting empty.
  * Behaves like an async API so it can be replaced 1:1 by HttpDataSource.
  */
 export class LocalDataSource implements DataSource {
@@ -54,10 +62,11 @@ export class LocalDataSource implements DataSource {
   async load(): Promise<Dataset> {
     await delay();
     try {
+      LEGACY_KEYS.forEach((k) => localStorage.removeItem(k));
       const raw = localStorage.getItem(STORAGE_KEY);
-      this.data = raw ? (JSON.parse(raw) as Dataset) : freshSeed();
+      this.data = raw ? { ...emptyDataset(), ...(JSON.parse(raw) as Partial<Dataset>) } : emptyDataset();
     } catch {
-      this.data = freshSeed();
+      this.data = emptyDataset();
     }
     return structuredClone(this.data);
   }
@@ -100,7 +109,7 @@ export class LocalDataSource implements DataSource {
     } catch {
       /* ignore */
     }
-    this.data = freshSeed();
+    this.data = emptyDataset();
     return structuredClone(this.data);
   }
 }

@@ -179,7 +179,27 @@ export interface Feedback360 {
   comment: string;
 }
 
+export const USER_ROLES = ['Admin', 'Program Executive', 'Trainer', 'Trainee'] as const;
+export type UserRole = (typeof USER_ROLES)[number];
+
+/** A sign-in account. Staff-type roles link to a Staff record; trainees link to a Participant. */
+export interface Account {
+  id: ID;
+  username: string; // stored lower-case, unique
+  displayName: string;
+  email: string;
+  role: UserRole;
+  passwordHash: string; // PBKDF2-SHA256, base64
+  salt: string; // base64
+  iterations: number;
+  staffId?: ID;
+  participantId?: ID;
+  active: boolean;
+  createdAt: string;
+}
+
 export interface Dataset {
+  accounts: Account[];
   programs: Program[];
   activities: Activity[];
   logistics: LogisticsItem[];

@@ -1,4 +1,5 @@
-import { CalendarRange, ClipboardList, GanttChartSquare, LayoutDashboard, MessageSquareText, Radar, X } from 'lucide-react';
+import { CalendarRange, ClipboardList, GanttChartSquare, LayoutDashboard, MessageSquareText, Radar, Users, X } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cx } from '@/lib/format';
 import { useCurrentProgramId } from '@/hooks/useCurrentProgram';
@@ -6,12 +7,14 @@ import { useCurrentProgramId } from '@/hooks/useCurrentProgram';
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pid = useCurrentProgramId();
   const { pathname } = useLocation();
+  const { can } = useAuth();
   const items = [
     { to: '/', label: 'Programs overview', icon: LayoutDashboard, end: true },
     { to: `/programs/${pid}/logistics`, label: 'Activities & logistics', icon: ClipboardList, match: '/logistics' },
     { to: `/programs/${pid}/timeline`, label: 'Structure & timeline', icon: GanttChartSquare, match: '/timeline' },
     { to: `/programs/${pid}/feedback`, label: 'Feedback reports', icon: MessageSquareText, match: '/feedback' },
     { to: '/analysis', label: '360° analysis', icon: Radar },
+    ...(can.manageUsers ? [{ to: '/users', label: 'Users', icon: Users }] : []),
   ];
   return (
     <>
@@ -64,9 +67,9 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           ))}
         </nav>
         <div className="border-t border-stone-200 px-5 py-4 text-[11px] muted dark:border-stone-800">
-          Mock data · local storage
+          Data is stored in this browser.
           <br />
-          Swap the data source to connect an API.
+          Connect an API to share it across devices.
         </div>
       </aside>
     </>

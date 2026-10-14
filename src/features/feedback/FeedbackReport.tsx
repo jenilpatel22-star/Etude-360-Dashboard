@@ -8,7 +8,7 @@ import { DataTable, type Column } from '@/components/ui/DataTable';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { Tabs } from '@/components/ui/Tabs';
-import { useRole } from '@/context/RoleContext';
+import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/data/DataProvider';
 import { FeedbackForm } from '@/features/forms/FeedbackForm';
 import { useProgram } from '@/features/program/ProgramLayout';
@@ -34,7 +34,7 @@ type TrendMetric = 'overall' | 'nps' | 'responseRate';
 export default function FeedbackReport() {
   const program = useProgram();
   const { data } = useData();
-  const { can } = useRole();
+  const { can } = useAuth();
   const t = useChartTheme();
   const reportRef = useRef<HTMLDivElement>(null);
   const [adding, setAdding] = useState(false);

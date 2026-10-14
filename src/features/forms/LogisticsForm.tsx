@@ -1,6 +1,5 @@
 import { Field, inputProps } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
-import { useRole } from '@/context/RoleContext';
 import { useData } from '@/data/DataProvider';
 import { required, useForm, type Errors } from '@/hooks/useForm';
 import { LOGISTICS_CATEGORIES, LOGISTICS_STATUSES, type LogisticsItem, type Program } from '@/types';
@@ -33,7 +32,6 @@ function validate(v: Values): Errors<Values> {
 
 export function LogisticsForm({ program, item, onClose }: { program: Program; item?: LogisticsItem; onClose: () => void }) {
   const { create, update, remove } = useData();
-  const { can } = useRole();
   const { values, set, errors, submit, submitting, submitError } = useForm<Values>(
     {
       category: item?.category ?? 'venue',
@@ -77,7 +75,7 @@ export function LogisticsForm({ program, item, onClose }: { program: Program; it
           onCancel={onClose}
           submitting={submitting}
           submitLabel={item ? 'Save' : 'Add item'}
-          onDelete={item && can.delete ? () => void remove('logistics', item.id).then(onClose) : undefined}
+          onDelete={item ? () => void remove('logistics', item.id).then(onClose) : undefined}
         />
       }
     >

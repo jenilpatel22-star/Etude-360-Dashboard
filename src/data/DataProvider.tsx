@@ -13,6 +13,7 @@ interface DataContextValue {
 }
 
 const EMPTY: Dataset = {
+  accounts: [],
   programs: [],
   activities: [],
   logistics: [],

@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/data/DataProvider';
+import { LoginPage } from '@/features/auth/LoginPage';
+import { SetupPage } from '@/features/auth/SetupPage';
 import { Spinner } from '@/components/ui/EmptyState';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
@@ -8,6 +11,10 @@ import { Topbar } from './Topbar';
 export function AppLayout() {
   const [navOpen, setNavOpen] = useState(false);
   const { loading, error } = useData();
+  const { account, needsSetup } = useAuth();
+  if (loading) return <Spinner label="Loading" />;
+  if (!error && needsSetup) return <SetupPage />;
+  if (!error && !account) return <LoginPage />;
   return (
     <div className="min-h-screen">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">
@@ -21,8 +28,6 @@ export function AppLayout() {
             <div className="card p-6 text-sm text-red-700 dark:text-red-300" role="alert">
               Failed to load data: {error}
             </div>
-          ) : loading ? (
-            <Spinner label="Loading programmes" />
           ) : (
             <Outlet />
           )}

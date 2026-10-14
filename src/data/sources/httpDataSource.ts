@@ -22,9 +22,11 @@ export class HttpDataSource implements DataSource {
   }
 
   async load(): Promise<Dataset> {
+    // Accounts are deliberately not listed: with a real backend, authentication
+    // (login, password hashing, sessions) must run server-side.
     const names: CollectionName[] = ['programs', 'activities', 'logistics', 'phases', 'feedback', 'feedback360', 'staff', 'participants'];
     const lists = await Promise.all(names.map((n) => this.request<unknown[]>(`/${n}`)));
-    return Object.fromEntries(names.map((n, i) => [n, lists[i]])) as unknown as Dataset;
+    return { accounts: [], ...Object.fromEntries(names.map((n, i) => [n, lists[i]])) } as unknown as Dataset;
   }
 
   create<C extends CollectionName>(collection: C, item: Omit<EntityOf<C>, 'id'>) {

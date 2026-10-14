@@ -44,6 +44,9 @@ const MAP: Record<string, [Tone, LucideIcon]> = {
   'On track': ['green', CircleDot],
   Complete: ['stone', CheckCircle2],
   'Not started': ['stone', CircleDashed],
+  // accounts
+  Active: ['green', CheckCircle2],
+  Deactivated: ['stone', XCircle],
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {

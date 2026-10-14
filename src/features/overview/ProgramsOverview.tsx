@@ -1,10 +1,11 @@
 import { CalendarClock, CheckCircle2, LayoutGrid, Lightbulb, PlayCircle, Plus, PoundSterling, Users, CalendarDays } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/layout/AppLayout';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { Tabs } from '@/components/ui/Tabs';
-import { useRole } from '@/context/RoleContext';
+import { useAuth } from '@/context/AuthContext';
 import { useData, useLookups } from '@/data/DataProvider';
 import { ProgramForm } from '@/features/forms/ProgramForm';
 import { budgetSummary } from '@/lib/analytics';
@@ -29,7 +30,7 @@ const sortFor = (status: BoardStatus) => (a: Program, b: Program) =>
 export function ProgramsOverview() {
   const { data } = useData();
   const { staffName } = useLookups();
-  const { can } = useRole();
+  const { can } = useAuth();
   const [filters, setFilters] = useState<ProgramFilters>(EMPTY_FILTERS);
   const [view, setView] = useState<'board' | 'calendar'>('board');
   const [mobileCol, setMobileCol] = useState<BoardStatus>('Ongoing');
@@ -106,6 +107,29 @@ export function ProgramsOverview() {
         />
       </div>
 
+      {!data.programs.length ? (
+        <div className="card">
+          <EmptyState title="No programmes yet" icon={LayoutGrid}>
+            {can.editPrograms ? (
+              <div className="flex flex-col items-center gap-3">
+                <p>
+                  Create your first programme to start planning activities, logistics and the timeline. Add trainers and Program Executives on the{' '}
+                  <Link to="/users" className="font-medium text-brand-700 underline dark:text-brand-300">
+                    Users
+                  </Link>{' '}
+                  page first so you can assign them.
+                </p>
+                <button type="button" className="btn-primary" onClick={() => setCreating(true)}>
+                  <Plus className="h-4 w-4" aria-hidden /> New programme
+                </button>
+              </div>
+            ) : (
+              'An Admin hasn’t added any programmes yet. They’ll appear here once created.'
+            )}
+          </EmptyState>
+        </div>
+      ) : (
+        <>
       <FilterBar value={filters} onChange={setFilters} />
 
       {view === 'calendar' ? (
@@ -161,6 +185,8 @@ export function ProgramsOverview() {
             Allocated budget across confirmed programmes: <span className="tabular-nums">{formatCurrency(kpis.budget.allocated)}</span> · committed
             (planned logistics): <span className="tabular-nums">{formatCurrency(kpis.budget.committed)}</span>
           </p>
+        </>
+      )}
         </>
       )}
       {creating && <ProgramForm onClose={() => setCreating(false)} />}

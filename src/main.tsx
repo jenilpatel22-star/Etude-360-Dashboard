@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import { RoleProvider } from './context/RoleContext';
+import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DataProvider } from './data/DataProvider';
 import './index.css';
@@ -9,11 +9,11 @@ import './index.css';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider>
-      <RoleProvider>
-        <DataProvider>
+      <DataProvider>
+        <AuthProvider>
           <App />
-        </DataProvider>
-      </RoleProvider>
+        </AuthProvider>
+      </DataProvider>
     </ThemeProvider>
   </StrictMode>,
 );

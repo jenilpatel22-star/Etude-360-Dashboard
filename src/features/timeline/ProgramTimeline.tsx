@@ -5,7 +5,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { useRole } from '@/context/RoleContext';
+import { useAuth } from '@/context/AuthContext';
 import { useData, useLookups } from '@/data/DataProvider';
 import { PhaseForm } from '@/features/forms/PhaseForm';
 import { useProgram } from '@/features/program/ProgramLayout';
@@ -146,7 +146,7 @@ export default function ProgramTimeline() {
   const program = useProgram();
   const { data } = useData();
   const { staffName } = useLookups();
-  const { can } = useRole();
+  const { can } = useAuth();
   const [editing, setEditing] = useState<TimelinePhase | null>(null);
 
   const phases = useMemo(
@@ -219,7 +219,7 @@ export default function ProgramTimeline() {
       <Card>
         <CardHeader title="Programme structure" subtitle="Needs analysis → Design → Pre-work → Delivery → Assessment → Post-training follow-up" />
         <CardBody>
-          <Gantt phases={phases} onEdit={can.editOperations ? setEditing : undefined} />
+          <Gantt phases={phases} onEdit={can.editTimeline(program) ? setEditing : undefined} />
         </CardBody>
       </Card>
 

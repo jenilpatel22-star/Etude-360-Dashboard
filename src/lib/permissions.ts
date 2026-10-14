@@ -1,21 +1,40 @@
-export const ROLES = ['Admin', 'Program Coordinator', 'Trainer'] as const;
-export type Role = (typeof ROLES)[number];
+import type { ID, Program, UserRole } from '@/types';
 
 export interface Permissions {
-  /** Create / edit programs */
+  /** Programmes overview: create, edit and delete programmes (incl. budgets). */
   editPrograms: boolean;
-  /** Create / edit activities, logistics, phases */
-  editOperations: boolean;
-  /** Record feedback */
+  /** Record programme feedback and 360° responses. */
   editFeedback: boolean;
-  /** Delete any record */
-  delete: boolean;
-  /** Change budgets and reset demo data */
-  manageBudget: boolean;
+  /** Manage user accounts and clear data. */
+  manageUsers: boolean;
+  /** No editing anywhere. */
+  readOnly: boolean;
+  /** Activities agenda of a programme. */
+  editActivities: (p: Program) => boolean;
+  /** Logistics checklist of a programme. */
+  editLogistics: (p: Program) => boolean;
+  /** Structure & timeline phases of a programme. */
+  editTimeline: (p: Program) => boolean;
 }
 
-export const PERMISSIONS: Record<Role, Permissions> = {
-  Admin: { editPrograms: true, editOperations: true, editFeedback: true, delete: true, manageBudget: true },
-  'Program Coordinator': { editPrograms: true, editOperations: true, editFeedback: true, delete: false, manageBudget: false },
-  Trainer: { editPrograms: false, editOperations: false, editFeedback: false, delete: false, manageBudget: false },
-};
+/**
+ * Access rules:
+ * - Admin: everything.
+ * - Program Executive: activities, logistics, structure & timeline on every programme.
+ * - Trainer: activities on programmes they are assigned to.
+ * - Trainee: view only.
+ */
+export function permissionsFor(role: UserRole | null, staffId?: ID): Permissions {
+  const admin = role === 'Admin';
+  const exec = role === 'Program Executive';
+  const trainer = role === 'Trainer';
+  return {
+    editPrograms: admin,
+    editFeedback: admin,
+    manageUsers: admin,
+    readOnly: role === 'Trainee' || role === null,
+    editActivities: (p) => admin || exec || (trainer && !!staffId && p.trainerIds.includes(staffId)),
+    editLogistics: () => admin || exec,
+    editTimeline: () => admin || exec,
+  };
+}

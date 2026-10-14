@@ -198,8 +198,32 @@ export interface Account {
   createdAt: string;
 }
 
+/** One line on an activity's checklist (imported from Excel). */
+export interface DepositoryItem {
+  id: ID;
+  name: string;
+  quantity: string; // kept as text: "2", "1 per participant", "as needed"
+  unit: string;
+  responsible: string;
+  notes: string;
+}
+
+/** A reusable activity template in the Activity Depository, with the items it needs. */
+export interface DepositoryActivity {
+  id: ID;
+  code: string;
+  name: string;
+  category: string;
+  description: string;
+  items: DepositoryItem[];
+  sourceFile: string;
+  importedAt: string;
+  importedBy: string;
+}
+
 export interface Dataset {
   accounts: Account[];
+  depository: DepositoryActivity[];
   programs: Program[];
   activities: Activity[];
   logistics: LogisticsItem[];

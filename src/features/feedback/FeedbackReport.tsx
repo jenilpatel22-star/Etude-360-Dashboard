@@ -118,7 +118,7 @@ export default function FeedbackReport() {
           <MessageSquarePlus className="h-4 w-4" aria-hidden /> Record feedback
         </button>
       )}
-      <button type="button" className="btn-secondary" onClick={onCsv} disabled={!fb.length}>
+      <button type="button" className="btn-secondary" onClick={() => void onCsv()} disabled={!fb.length}>
         <Download className="h-4 w-4" aria-hidden /> CSV
       </button>
       <button type="button" className="btn-primary" onClick={() => void onPdf()} disabled={!fb.length || exporting}>

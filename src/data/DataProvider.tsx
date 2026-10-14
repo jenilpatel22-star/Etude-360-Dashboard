@@ -9,11 +9,13 @@ interface DataContextValue {
   create<C extends CollectionName>(collection: C, item: Omit<EntityOf<C>, 'id'>): Promise<EntityOf<C>>;
   update<C extends CollectionName>(collection: C, id: ID, patch: Partial<EntityOf<C>>): Promise<EntityOf<C>>;
   remove(collection: CollectionName, id: ID): Promise<void>;
+  bulk: DataSource['bulk'];
   reset(): Promise<void>;
 }
 
 const EMPTY: Dataset = {
   accounts: [],
+  depository: [],
   programs: [],
   activities: [],
   logistics: [],
@@ -65,13 +67,18 @@ export function DataProvider({ children, source }: { children: ReactNode; source
     setData(await sourceRef.current.load());
   }, []);
 
+  const bulk = useCallback<DataSource['bulk']>(async (collection, ops) => {
+    await sourceRef.current.bulk(collection, ops);
+    setData(await sourceRef.current.load());
+  }, []);
+
   const reset = useCallback(async () => {
     setData(await sourceRef.current.reset());
   }, []);
 
   const value = useMemo(
-    () => ({ data, loading, error, create, update, remove, reset }),
-    [data, loading, error, create, update, remove, reset],
+    () => ({ data, loading, error, create, update, remove, bulk, reset }),
+    [data, loading, error, create, update, remove, bulk, reset],
   );
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

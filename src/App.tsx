@@ -10,6 +10,7 @@ const ProgramTimeline = lazy(() => import('@/features/timeline/ProgramTimeline')
 const FeedbackReport = lazy(() => import('@/features/feedback/FeedbackReport'));
 const OrgAnalysis = lazy(() => import('@/features/analysis/OrgAnalysis'));
 const UsersPage = lazy(() => import('@/features/users/UsersPage'));
+const DepositoryPage = lazy(() => import('@/features/depository/DepositoryPage'));
 
 const wrap = (el: React.ReactNode) => <Suspense fallback={<Spinner />}>{el}</Suspense>;
 
@@ -32,6 +33,7 @@ const router = createRouter([
         ],
       },
       { path: 'analysis', element: wrap(<OrgAnalysis />) },
+      { path: 'depository', element: wrap(<DepositoryPage />) },
       { path: 'users', element: wrap(<UsersPage />) },
       { path: '*', element: <Navigate to="/" replace /> },
     ],

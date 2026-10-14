@@ -38,15 +38,33 @@ Everything is stored in the browser's `localStorage`. **Users → Clear all data
 | `/programs/:id/timeline` | **Structure & timeline**: Gantt of the six phases with milestones and a today marker. Delayed phases are flagged in red. Progress vs expected for each phase, plus a day-by-day delivery schedule. |
 | `/programs/:id/feedback` | **Feedback report**: average score per dimension, NPS gauge with promoter/passive/detractor split, response rate, score distribution, trend vs previous runs, top positive and negative comment themes, and a comments table. Exports to **PDF** and **CSV**. |
 | `/analysis` | **360° organisation analysis**: radar comparing stakeholder groups, programme × dimension heatmap, gap analysis (internal staff vs participants and sponsors), trainer leaderboard, category performance, quarter-over-quarter trend. Includes an auto-generated summary (top 3 strengths, top 3 improvement areas, recommended actions). Can be scoped to one category. Exports to **PDF**. |
+| `/depository` | **Activity depository**: a library of standard activities and the items each one needs, imported from Excel. Every role can search it, tick items on screen (saved per user in the browser), and download a checklist for one activity or for everything shown, as **Excel** (Done / Checked by / Date columns) or **PDF** (tick boxes and a sign-off line per activity). Admins and Program Executives import and remove activities. |
+
+### Activity depository import format
+
+Admins and Program Executives import from **Activity depository → Import from Excel**. **Template** downloads a ready-made workbook with example rows and a "How to fill" sheet.
+
+- **File type:** `.xlsx`, up to 10 MB and 5,000 rows. For an older `.xls` file, save it as `.xlsx` in Excel first.
+- **Which sheet:** a sheet named like *Activities*, *Depository* or *Checklist* is used if there is one. Otherwise the first sheet.
+- **Layout:** one row per item.
+  - Required columns: **Activity** and **Item**.
+  - Optional columns: **Activity Code**, **Category**, **Description**, **Quantity**, **Unit**, **Responsible** and **Notes**.
+  - Common alternative column names are recognised (*Activity Name*, *Items*, *Qty*, *UOM*, *Owner*, *Remarks*, …).
+  - Title rows above the header row are ignored.
+- **Continuation rows:** leave the Activity cell blank on the rows that follow, and they're added to the activity above. This matches the usual merged-cell layout.
+- **Several items in one cell:** separate them with `;` or line breaks.
+- **Preview:** before anything is saved you see what was found, which rows will be skipped and why, and any warnings.
+- **Add and update** (the default): an activity whose code matches an existing one is replaced with the version in the file. Without codes, activities are matched by name. New activities are added, and existing activities that aren't in the file are kept.
+- **Replace everything:** swaps the whole depository for the file's contents.
 
 ### Roles and access
 
-| | Programmes overview | Activities | Logistics | Structure & timeline | Feedback & 360° entry | Users |
-|---|---|---|---|---|---|---|
-| **Admin** | edit | edit | edit | edit | edit | manage |
-| **Program Executive** | view | edit (all programmes) | edit | edit | view | – |
-| **Trainer** | view | edit (assigned programmes only) | view | view | view | – |
-| **Trainee** | view | view | view | view | view | – |
+| | Programmes overview | Activities | Logistics | Structure & timeline | Feedback & 360° entry | Activity depository | Users |
+|---|---|---|---|---|---|---|---|
+| **Admin** | edit | edit | edit | edit | edit | import + download | manage |
+| **Program Executive** | view | edit (all programmes) | edit | edit | view | import + download | – |
+| **Trainer** | view | edit (assigned programmes only) | view | view | view | download | – |
+| **Trainee** | view | view | view | view | view | download | – |
 
 "Edit" includes adding and deleting records in that area. Only Admins create, edit or delete programmes (including budgets). A Trainer can edit activities only on programmes where they're listed as a trainer. Every role can see the reports and the 360° analysis.
 
@@ -82,6 +100,7 @@ src/
     analytics.ts             pure aggregation (NPS, readiness, gaps, themes, summary…)
     chartTheme.ts            validated categorical/sequential palettes, light & dark
     export.ts                CSV and PDF export
+    depository.ts            Excel import parsing + checklist export (Excel/PDF)
     dates.ts, format.ts, permissions.ts
   context/                   Theme (light/dark) and Role providers
   hooks/                     useForm, useCurrentProgram
@@ -109,6 +128,7 @@ All types are defined in `src/types/index.ts`. Dates are ISO strings.
 | **Staff** | `id, name, role (Trainer \| Coordinator \| Manager \| Support), email, department, specialties[]` |
 | **Participant** | `id, name, email, organisation, department, jobTitle, programIds[]` |
 | **Account** | `id, username (unique, lower-case), displayName, email, role (Admin \| Program Executive \| Trainer \| Trainee), passwordHash, salt, iterations, staffId?, participantId?, active, createdAt` |
+| **DepositoryActivity** | `id, code, name, category, description, items[] {id, name, quantity, unit, responsible, notes}, sourceFile, importedAt, importedBy` |
 
 Each account is linked to a profile. An Admin is linked to a Staff record with role Manager, a Program Executive to Coordinator, and a Trainer to Trainer, so all three appear in programme and activity pickers. A Trainee is linked to a Participant record. Deleting an account keeps its profile, so programme history stays intact. To stop someone signing in, deactivate their account instead.
 

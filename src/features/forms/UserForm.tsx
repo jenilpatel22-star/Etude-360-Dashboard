@@ -19,10 +19,10 @@ type Values = {
 };
 
 export const ROLE_HELP: Record<UserRole, string> = {
-  Admin: 'Full access: programmes, activities, logistics, timeline, feedback and users.',
-  'Program Executive': 'Edits activities, logistics and structure & timeline on all programmes.',
-  Trainer: 'Edits activities on the programmes they are assigned to.',
-  Trainee: 'View only.',
+  Admin: 'Full access: programmes, activities, logistics, timeline, feedback, Activity Depository and users.',
+  'Program Executive': 'Edits activities, logistics and structure & timeline on all programmes; imports the Activity Depository.',
+  Trainer: 'Edits activities on the programmes they are assigned to. Can download Activity Depository checklists.',
+  Trainee: 'View only. Can download Activity Depository checklists.',
 };
 
 export function UserForm({ account, onClose }: { account?: Account; onClose: () => void }) {

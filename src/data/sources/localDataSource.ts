@@ -7,6 +7,7 @@ const LEGACY_KEYS = ['etude.dataset.v1', 'etude.dataset.v2', 'etude.currentProgr
 
 const PREFIX: Record<CollectionName, string> = {
   accounts: 'U',
+  depository: 'DEP',
   programs: 'PRG',
   activities: 'ACT',
   logistics: 'LOG',
@@ -20,6 +21,7 @@ const PREFIX: Record<CollectionName, string> = {
 export function emptyDataset(): Dataset {
   return {
     accounts: [],
+    depository: [],
     programs: [],
     activities: [],
     logistics: [],
@@ -100,6 +102,23 @@ export class LocalDataSource implements DataSource {
         (this.db[c] as { programId: ID }[]) = (this.db[c] as { programId: ID }[]).filter((x) => x.programId !== id) as never;
       }
     }
+    this.persist();
+  }
+
+  async bulk<C extends CollectionName>(
+    collection: C,
+    ops: { create?: Omit<EntityOf<C>, 'id'>[]; update?: { id: ID; patch: Partial<EntityOf<C>> }[]; remove?: ID[] },
+  ): Promise<void> {
+    await delay(60);
+    const list = this.db[collection] as EntityOf<C>[];
+    const removeIds = new Set(ops.remove ?? []);
+    const next = list.filter((x) => !removeIds.has(x.id));
+    for (const u of ops.update ?? []) {
+      const idx = next.findIndex((x) => x.id === u.id);
+      if (idx !== -1) next[idx] = { ...next[idx], ...u.patch, id: u.id };
+    }
+    for (const c of ops.create ?? []) next.push({ ...c, id: newId(collection) } as EntityOf<C>);
+    (this.db[collection] as EntityOf<C>[]) = next;
     this.persist();
   }
 

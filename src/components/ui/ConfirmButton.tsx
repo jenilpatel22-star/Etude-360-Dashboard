@@ -38,7 +38,7 @@ export function ConfirmButton({
         } else setArmed(true);
       }}
     >
-      <span aria-live="polite">{armed ? confirmLabel : children}</span>
+      <span aria-live="polite" className="inline-flex items-center gap-1.5">{armed ? confirmLabel : children}</span>
     </button>
   );
 }

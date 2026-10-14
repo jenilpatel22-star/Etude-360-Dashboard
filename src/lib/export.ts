@@ -1,6 +1,32 @@
 /** Client-side export helpers (CSV + PDF). Heavy PDF libs are loaded on demand. */
 
-function download(blob: Blob, filename: string) {
+interface DownloadsNamespace {
+  save(req: { filename: string; data: Blob }): Promise<{ status: string }>;
+}
+interface ClaudeHost {
+  use?(name: 'downloads'): Promise<DownloadsNamespace | null>;
+}
+
+/**
+ * Save a generated file. Inside the claude.ai artifact viewer, plain downloads
+ * are blocked, so the viewer's `downloads` capability is used (the viewer
+ * confirms the save). Everywhere else a normal browser download is triggered.
+ */
+export async function download(blob: Blob, filename: string): Promise<void> {
+  const host = (window as unknown as { claude?: ClaudeHost }).claude;
+  if (host?.use) {
+    const downloads = await host.use('downloads').catch(() => null);
+    if (downloads) {
+      try {
+        await downloads.save({ filename, data: blob });
+      } catch (e) {
+        const code = (e as { code?: string })?.code;
+        if (code === 'declined') return; // the viewer said no — nothing to do
+        throw new Error(code === 'rate_limited' ? 'A save is already waiting for confirmation.' : 'This file could not be saved here.');
+      }
+      return;
+    }
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -18,10 +44,10 @@ const escapeCsv = (v: unknown) => {
   return /[",\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 };
 
-export function exportCsv(filename: string, rows: Record<string, unknown>[], columns?: string[]) {
+export async function exportCsv(filename: string, rows: Record<string, unknown>[], columns?: string[]) {
   const cols = columns ?? Object.keys(rows[0] ?? {});
   const lines = [cols.map(escapeCsv).join(','), ...rows.map((r) => cols.map((c) => escapeCsv(r[c])).join(','))];
-  download(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), filename);
+  await download(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), filename);
 }
 
 /**
@@ -65,7 +91,7 @@ export async function exportElementToPdf(el: HTMLElement, filename: string, titl
     y += h;
     page += 1;
   }
-  pdf.save(filename);
+  await download(pdf.output('blob'), filename);
 }
 
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');

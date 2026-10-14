@@ -1,4 +1,4 @@
-import { CalendarRange, ClipboardList, GanttChartSquare, LayoutDashboard, MessageSquareText, Radar, Users, X } from 'lucide-react';
+import { CalendarRange, ClipboardList, GanttChartSquare, LayoutDashboard, Library, MessageSquareText, Radar, Users, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cx } from '@/lib/format';
@@ -14,6 +14,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
     { to: `/programs/${pid}/timeline`, label: 'Structure & timeline', icon: GanttChartSquare, match: '/timeline' },
     { to: `/programs/${pid}/feedback`, label: 'Feedback reports', icon: MessageSquareText, match: '/feedback' },
     { to: '/analysis', label: '360° analysis', icon: Radar },
+    { to: '/depository', label: 'Activity depository', icon: Library },
     ...(can.manageUsers ? [{ to: '/users', label: 'Users', icon: Users }] : []),
   ];
   return (

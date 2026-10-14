@@ -11,6 +11,11 @@ export interface DataSource {
   create<C extends CollectionName>(collection: C, item: Omit<EntityOf<C>, 'id'>): Promise<EntityOf<C>>;
   update<C extends CollectionName>(collection: C, id: ID, patch: Partial<EntityOf<C>>): Promise<EntityOf<C>>;
   remove(collection: CollectionName, id: ID): Promise<void>;
+  /** Apply many writes to one collection at once (e.g. a spreadsheet import). */
+  bulk<C extends CollectionName>(
+    collection: C,
+    ops: { create?: Omit<EntityOf<C>, 'id'>[]; update?: { id: ID; patch: Partial<EntityOf<C>> }[]; remove?: ID[] },
+  ): Promise<void>;
   /** Delete all data, including accounts (Admin only). */
   reset(): Promise<Dataset>;
 }

@@ -24,7 +24,7 @@ export class HttpDataSource implements DataSource {
   async load(): Promise<Dataset> {
     // Accounts are deliberately not listed: with a real backend, authentication
     // (login, password hashing, sessions) must run server-side.
-    const names: CollectionName[] = ['programs', 'activities', 'logistics', 'phases', 'feedback', 'feedback360', 'staff', 'participants'];
+    const names: CollectionName[] = ['depository', 'programs', 'activities', 'logistics', 'phases', 'feedback', 'feedback360', 'staff', 'participants'];
     const lists = await Promise.all(names.map((n) => this.request<unknown[]>(`/${n}`)));
     return { accounts: [], ...Object.fromEntries(names.map((n, i) => [n, lists[i]])) } as unknown as Dataset;
   }
@@ -39,6 +39,16 @@ export class HttpDataSource implements DataSource {
 
   remove(collection: CollectionName, id: ID) {
     return this.request<void>(`/${collection}/${id}`, { method: 'DELETE' });
+  }
+
+  /** Sequential fallback; a real API would expose a batch endpoint. */
+  async bulk<C extends CollectionName>(
+    collection: C,
+    ops: { create?: Omit<EntityOf<C>, 'id'>[]; update?: { id: ID; patch: Partial<EntityOf<C>> }[]; remove?: ID[] },
+  ) {
+    for (const id of ops.remove ?? []) await this.remove(collection, id);
+    for (const u of ops.update ?? []) await this.update(collection, u.id, u.patch);
+    for (const c of ops.create ?? []) await this.create(collection, c);
   }
 
   async reset() {
